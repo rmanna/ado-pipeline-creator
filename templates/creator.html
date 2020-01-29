@@ -1,0 +1,57 @@
+<!DOCtype html>
+<html>
+<head>
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Rosario:400' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="../css/main.css">
+<title>{{.Title}}</title>
+</head>
+<body>
+
+<nav>
+<ul>
+  <li><a href="/">Home</a></li>
+  <li><a class="active" href="creator">Pipeline Creator</a></li>
+</ul>
+</nav>
+
+<div class="mainbody">
+<h1>Create your Pipeline!</h1>
+<div class="indent"><p>Enter all appropriate information</p></div>
+</div>
+
+<div class="formselect">
+<form method="post" action="/createpipeline">
+<table>
+  <tr>
+    <td>Repository Name (Example: ol-service): </td>
+    <td>
+      <input type="text" name="serviceName" id="inputs">
+    </td>
+  </tr>
+  <tr>
+      <td class="select">Application Type: </td>         
+      <td>
+         <select id="inputs">        
+              <option value="javaMvn">Java/Maven</option>
+              <option value="javaGradle">Java/Gradle</option>
+              <option value="vueNpm">Vue/NPM</option>
+              <option value="angularNpm">Angular/NPM</option>
+              <option value="golang">GoLang</option>
+         </select>
+      </td>        
+  </tr>
+  <tr>
+    <td>E-mail address: </td>
+    <td><input type="text" name="email" id="inputs"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><input type="submit" value="Submit" id="inputs"></td>
+  </tr>
+</table>
+</form>
+</div>
+
+</body>
+</html>
