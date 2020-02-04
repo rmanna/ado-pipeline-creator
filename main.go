@@ -9,16 +9,17 @@ import (
 )
 
 type PageVars struct {
-	Id            string
-	Title         string
-	Email         string
-	AgentType     string
+	Title       string
+	ServiceName string
+	AgentType   string
+	Email       string
 }
 
 func main() {
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
-	http.HandleFunc("/", Home)
-	http.HandleFunc("/creator", Creator)
+	http.HandleFunc("/", home)
+	http.HandleFunc("/creator", creator)
+	http.HandleFunc("/execute", execute)
 	http.ListenAndServe(getPort(), nil)
 }
 
@@ -32,20 +33,20 @@ func getPort() string {
 }
 
 func render(w http.ResponseWriter, tmpl string, pageVars PageVars) {
-        
-        // prefix the name passed in with templates/
-	tmpl = fmt.Sprintf("templates/%s", tmpl) 
-        //parse the template file held in the templates folder
-	t, err := template.ParseFiles(tmpl)      
+
+	// prefix the name passed in with templates/
+	tmpl = fmt.Sprintf("templates/%s", tmpl)
+	//parse the template file held in the templates folder
+	t, err := template.ParseFiles(tmpl)
 
 	if err != nil { // if there is an error
 		log.Print("template parsing error: ", err)
 	}
-       
-        //execute the template and pass in the variables to fill the gaps
-	err = t.Execute(w, pageVars) 
 
-	if err != nil { 
+	//execute the template and pass in the variables to fill the gaps
+	err = t.Execute(w, pageVars)
+
+	if err != nil {
 		log.Print("template executing error: ", err)
 	}
 }

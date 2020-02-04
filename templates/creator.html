@@ -21,18 +21,18 @@
 </div>
 
 <div class="formselect">
-<form method="post" action="/createpipeline">
+<form method="post" action="/execute">
 <table>
   <tr>
     <td>Repository Name (Example: ol-service): </td>
     <td>
-      <input type="text" name="serviceName" id="inputs">
+      <input type="text" name="serviceName" value="ol-" id="inputs">
     </td>
   </tr>
   <tr>
       <td class="select">Application Type: </td>         
       <td>
-         <select id="inputs">        
+         <select id="inputs" name="agentType">        
               <option value="javaMvn">Java/Maven</option>
               <option value="javaGradle">Java/Gradle</option>
               <option value="vueNpm">Vue/NPM</option>
@@ -47,7 +47,7 @@
   </tr>
   <tr>
     <td></td>
-    <td><input type="submit" value="Submit" id="inputs"></td>
+    <td><input type="submit" value="Create" id="inputs"></td>
   </tr>
 </table>
 </form>

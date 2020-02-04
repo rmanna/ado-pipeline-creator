@@ -1,0 +1,49 @@
+# Angular pipeline using npm
+
+---
+trigger:
+  - master
+  - feature/*
+  - hotfix/*
+  - develop
+  - develop-next
+
+pr:
+  - master
+  - hotfix
+  - develop
+  - develop-next
+  
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    name: KAR-AUTO/ado-pipeline-templates
+    ref: refs/heads/templates
+    endpoint: KAR-AUTO
+
+variables:
+  agentType: "npm-agent"
+  buildType: 'npm'
+  buildNpmCommand: 'run build'
+
+jobs:
+- job:
+  displayName: "Build"
+  continueOnError: false
+  variables:
+      - template: "common/globalSystemVars.yaml@templates"
+  pool:
+    name: 'infrastructure-agents'
+    vmImage: 'ip-10-202-3-88'
+  container:
+    image: ${{ variables.artifactoryAgentImagePath }}/${{ variables.agentType }}:latest 
+    endpoint: ${{ variables.artifactoryBaseUrl }} 
+  steps:
+  - checkout: self
+  - checkout: templates
+  - template: "pipelineTypes/${{ variables.buildType }}.yaml@templates"
+    parameters:
+      buildNpmCommand: ${{ variables.buildNpmCommand }}
+      artifactoryBaseUrl: "${{ variables.artifactoryBaseUrl }}" 
+      artifactoryImagePath: "${{ variables.artifactoryImagePath }}" 

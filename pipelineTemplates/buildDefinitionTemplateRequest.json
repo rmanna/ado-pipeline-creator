@@ -62,23 +62,23 @@
   },
   "repository": {
     "properties": {
-      "apiUrl": "https://api.github.com/repos/rmanna/testrepo",
-      "branchesUrl": "https://api.github.com/repos/rmanna/testrepo/branches",
-      "cloneUrl": "https://github.com/rmanna/testrepo.git",
+      "apiUrl": "https://api.github.com/repos/KAR-AUTO/SERVICENAME",
+      "branchesUrl": "https://api.github.com/repos/KAR-AUTO/SERVICENAME/branches",
+      "cloneUrl": "https://github.com/KAR-AUTO/SERVICENAME.git",
       "connectedServiceId": "5538f8db-0ba6-4c8a-a034-4b88bd803556",
       "defaultBranch": "develop",
-      "fullName": "rmanna/testrepo",
+      "fullName": "KAR-AUTO/SERVICENAME",
       "hasAdminPermissions": "False",
       "isFork": "False",
       "isPrivate": "True",
       "lastUpdated": "01/15/2020 20:39:51",
-      "manageUrl": "https://github.com/rmanna/testrepo",
+      "manageUrl": "https://github.com/KAR-AUTO/SERVICENAME",
       "nodeId": "MDEwOlJlcG9zaXRvcnkyMzQxNjAwNjM=",
       "ownerId": "39594840",
-      "orgName": "rmanna",
-      "refsUrl": "https://api.github.com/repos/rmanna/testrepo/git/refs",
-      "safeRepository": "rmanna/testrepo",
-      "shortName": "testrepo",
+      "orgName": "KAR-AUTO",
+      "refsUrl": "https://api.github.com/repos/KAR-AUTO/SERVICENAME/git/refs",
+      "safeRepository": "KAR-AUTO/SERVICENAME",
+      "shortName": "SERVICENAME",
       "ownerAvatarUrl": "https://avatars1.githubusercontent.com/u/39594840?v=4",
       "archived": "False",
       "externalId": "234160063",
@@ -92,10 +92,10 @@
       "labelSourcesFormat": "$(build.buildNumber)",
       "labelSources": "0"
     },
-    "id": "rmanna/testrepo",
+    "id": "KAR-AUTO/SERVICENAME",
     "type": "GitHub",
-    "name": "rmanna/testrepo",
-    "url": "https://github.com/rmanna/testrepo.git",
+    "name": "KAR-AUTO/SERVICENAME",
+    "url": "https://github.com/KAR-AUTO/SERVICENAME.git",
     "defaultBranch": "develop",
     "clean": "false",
     "checkoutSubmodules": false
@@ -116,7 +116,7 @@
       "isHosted": true
     }
   },
-  "name": "testrepo",
+  "name": "SERVICENAME",
   "type": "build",
   "queueStatus": "enabled"
 }
