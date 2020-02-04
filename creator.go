@@ -19,6 +19,8 @@ func creator(w http.ResponseWriter, req *http.Request) {
 }
 
 func execute(w http.ResponseWriter, req *http.Request) {
+
+	setupTargetFiles()
 	req.ParseForm()
 
 	fmt.Println("Service Name is:", req.FormValue("serviceName"))
@@ -30,21 +32,32 @@ func execute(w http.ResponseWriter, req *http.Request) {
 	updateFile("pipelineTemplates/sonar.properties", "target/sonar-project.properties", "SERVICENAME", serviceName)
 
 	agentType := req.FormValue("agentType")
-	if agentType == "javaGradle" {
+	switch agentType {
+	case "javaGradle":
 		fmt.Println("javaGradle")
 		updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "AGENTTYPE", agentType)
-	} else if agentType == "javaMvn" {
+	case "javaMvn":
 		fmt.Println("javaMvn")
 		updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "AGENTTYPE", agentType)
-	} else if agentType == "vueNpm" {
+	case "vueNpm":
 		fmt.Println("vueNpm")
-	} else if agentType == "angularNpm" {
+	case "angularNpm":
 		fmt.Println("angularNpm")
-	} else if agentType == "golang" {
+	case "golang":
 		fmt.Println("golang")
 	}
 
 	http.Redirect(w, req, "/creator", http.StatusFound)
+}
+
+func setupTargetFiles() {
+	if _, err := os.Stat("./target"); err != nil {
+		if os.IsNotExist(err) {
+			os.Mkdir("target", 0755)
+		} else {
+			os.Remove("target/*")
+		}
+	}
 }
 
 func updateFile(sourceFileName string, targetFileName string, sourceString string, targetString string) {

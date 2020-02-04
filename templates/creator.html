@@ -26,13 +26,13 @@
   <tr>
     <td>Repository Name (Example: ol-service): </td>
     <td>
-      <input type="text" name="serviceName" value="ol-" id="inputs">
+      <input type="text" name={{.ServiceName}} value="ol-" id="inputs">
     </td>
   </tr>
   <tr>
       <td class="select">Application Type: </td>         
       <td>
-         <select id="inputs" name="agentType">        
+         <select id="inputs" name={{.AgentType}}>        
               <option value="javaMvn">Java/Maven</option>
               <option value="javaGradle">Java/Gradle</option>
               <option value="vueNpm">Vue/NPM</option>
@@ -43,7 +43,7 @@
   </tr>
   <tr>
     <td>E-mail address: </td>
-    <td><input type="text" name="email" id="inputs"></td>
+    <td><input type="text" name={{.Email}}}} id="inputs"></td>
   </tr>
   <tr>
     <td></td>
