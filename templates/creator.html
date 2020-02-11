@@ -6,8 +6,17 @@
 <link rel="stylesheet" type="text/css" href="../css/main.css">
 <title>{{.Title}}</title>
 </head>
-<body>
 
+<script type='text/javascript'>
+ $(document).ready(function() {
+   $('select[name=compiler]').change(function(){
+     $('form').submit();
+   });
+});
+</script>
+
+
+<body>
 <nav>
 <ul>
   <li><a href="/">Home</a></li>
@@ -32,18 +41,28 @@
   <tr>
       <td class="select">Application Type: </td>         
       <td>
-         <select id="inputs" name={{.AgentType}}>        
-              <option value="javaMvn">Java/Maven</option>
-              <option value="javaGradle">Java/Gradle</option>
-              <option value="vueNpm">Vue/NPM</option>
-              <option value="angularNpm">Angular/NPM</option>
-              <option value="golang">GoLang</option>
+         <select id="inputs" name="compiler">        
+              <option value="default">select</option>
+              <option value="javaMvn">java-maven</option>
+              <option value="javaGradle">java-gradle</option>
+              <option value="vueNpm">vue-npm</option>
+              <option value="angularNpm">angular-npm</option>
+              <option value="golang">go</option>
          </select>
       </td>        
   </tr>
+  {{with $1:=.BuildFields}}
+     {{range $1}}
+  <tr>
+    <td>{{.Name}}: </td>
+    <td><input type="text" name={{.Name}} value={{.Value}} id="inputs"></td>
+  </tr>
+     {{end}}
+  {{end}}
+
   <tr>
     <td>E-mail address: </td>
-    <td><input type="text" name={{.Email}}}} id="inputs"></td>
+    <td><input type="text" name={{.Email}} id="inputs"></td>
   </tr>
   <tr>
     <td></td>

@@ -8,37 +8,60 @@ import (
 	"strings"
 )
 
-func creator(w http.ResponseWriter, req *http.Request) {
+type Input struct {
+	Name  string
+	Value string
+	Id    string
+}
+
+func creator(w http.ResponseWriter, r *http.Request) {
 
 	pageVars := PageVars{
 		ServiceName: "serviceName",
-		AgentType:   "agentType",
+		BuildType:   "buildType",
 		Email:       "email",
 	}
 	render(w, "creator.html", pageVars)
 }
 
-func execute(w http.ResponseWriter, req *http.Request) {
+func userSelected(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+	//buildType := r.FormValue("buildType")
+
+	Inputs := []Input{
+		Input{"gradleTasks", "test bootJar", "inputs"},
+		Input{"gradleOptions", "-Xmx1024m", "inputs"},
+		Input{"javaHomeOption", "JDKVersion", "inputs"},
+	}
+	pageVars := PageVars{
+		BuildFields: Inputs,
+	}
+	render(w, "creator.html", pageVars)
+}
+
+// On submit
+func execute(w http.ResponseWriter, r *http.Request) {
 
 	setupTargetFiles()
-	req.ParseForm()
+	r.ParseForm()
 
-	fmt.Println("Service Name is:", req.FormValue("serviceName"))
-	fmt.Println("Agent Type is:", req.FormValue("agentType"))
-	fmt.Println("Email is:", req.FormValue("email"))
+	fmt.Println("Service Name is:", r.FormValue("serviceName"))
+	fmt.Println("Build Type is:", r.FormValue("buildType"))
+	fmt.Println("Email is:", r.FormValue("email"))
 
-	serviceName := req.FormValue("serviceName")
+	serviceName := r.FormValue("serviceName")
 	updateFile("pipelineTemplates/buildDefinitionTemplateRequest.json", "target/buildDefinitionRequest.json", "SERVICENAME", serviceName)
 	updateFile("pipelineTemplates/sonar.properties", "target/sonar-project.properties", "SERVICENAME", serviceName)
 
-	agentType := req.FormValue("agentType")
-	switch agentType {
+	buildType := r.FormValue("buildType")
+	switch buildType {
 	case "javaGradle":
 		fmt.Println("javaGradle")
-		updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "AGENTTYPE", agentType)
+		updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", buildType)
 	case "javaMvn":
 		fmt.Println("javaMvn")
-		updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "AGENTTYPE", agentType)
+		updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", buildType)
 	case "vueNpm":
 		fmt.Println("vueNpm")
 	case "angularNpm":
@@ -47,9 +70,10 @@ func execute(w http.ResponseWriter, req *http.Request) {
 		fmt.Println("golang")
 	}
 
-	http.Redirect(w, req, "/creator", http.StatusFound)
+	//http.Redirect(w, r, "/creator", http.StatusFound)
 }
 
+// Create Dir or Cleanup Dir
 func setupTargetFiles() {
 	if _, err := os.Stat("./target"); err != nil {
 		if os.IsNotExist(err) {
@@ -60,6 +84,7 @@ func setupTargetFiles() {
 	}
 }
 
+// Find and Replace
 func updateFile(sourceFileName string, targetFileName string, sourceString string, targetString string) {
 	input, err := ioutil.ReadFile(sourceFileName)
 	if err != nil {
