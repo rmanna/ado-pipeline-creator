@@ -62,23 +62,23 @@
   },
   "repository": {
     "properties": {
-      "apiUrl": "https://api.github.com/repos/KAR-AUTO/ol-",
-      "branchesUrl": "https://api.github.com/repos/KAR-AUTO/ol-/branches",
-      "cloneUrl": "https://github.com/KAR-AUTO/ol-.git",
+      "apiUrl": "https://api.github.com/repos/KAR-AUTO/",
+      "branchesUrl": "https://api.github.com/repos/KAR-AUTO//branches",
+      "cloneUrl": "https://github.com/KAR-AUTO/.git",
       "connectedServiceId": "5538f8db-0ba6-4c8a-a034-4b88bd803556",
       "defaultBranch": "develop",
-      "fullName": "KAR-AUTO/ol-",
+      "fullName": "KAR-AUTO/",
       "hasAdminPermissions": "False",
       "isFork": "False",
       "isPrivate": "True",
       "lastUpdated": "01/15/2020 20:39:51",
-      "manageUrl": "https://github.com/KAR-AUTO/ol-",
+      "manageUrl": "https://github.com/KAR-AUTO/",
       "nodeId": "MDEwOlJlcG9zaXRvcnkyMzQxNjAwNjM=",
       "ownerId": "39594840",
       "orgName": "KAR-AUTO",
-      "refsUrl": "https://api.github.com/repos/KAR-AUTO/ol-/git/refs",
-      "safeRepository": "KAR-AUTO/ol-",
-      "shortName": "ol-",
+      "refsUrl": "https://api.github.com/repos/KAR-AUTO//git/refs",
+      "safeRepository": "KAR-AUTO/",
+      "shortName": "",
       "ownerAvatarUrl": "https://avatars1.githubusercontent.com/u/39594840?v=4",
       "archived": "False",
       "externalId": "234160063",
@@ -92,10 +92,10 @@
       "labelSourcesFormat": "$(build.buildNumber)",
       "labelSources": "0"
     },
-    "id": "KAR-AUTO/ol-",
+    "id": "KAR-AUTO/",
     "type": "GitHub",
-    "name": "KAR-AUTO/ol-",
-    "url": "https://github.com/KAR-AUTO/ol-.git",
+    "name": "KAR-AUTO/",
+    "url": "https://github.com/KAR-AUTO/.git",
     "defaultBranch": "develop",
     "clean": "false",
     "checkoutSubmodules": false
@@ -116,7 +116,7 @@
       "isHosted": true
     }
   },
-  "name": "ol-",
+  "name": "",
   "type": "build",
   "queueStatus": "enabled"
 }

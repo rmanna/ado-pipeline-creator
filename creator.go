@@ -17,25 +17,11 @@ type Input struct {
 func creator(w http.ResponseWriter, r *http.Request) {
 
 	pageVars := PageVars{
-		ServiceName: "serviceName",
-		BuildType:   "buildType",
-		Email:       "email",
-	}
-	render(w, "creator.html", pageVars)
-}
-
-func userSelected(w http.ResponseWriter, r *http.Request) {
-
-	r.ParseForm()
-	//buildType := r.FormValue("buildType")
-
-	Inputs := []Input{
-		Input{"gradleTasks", "test bootJar", "inputs"},
-		Input{"gradleOptions", "-Xmx1024m", "inputs"},
-		Input{"javaHomeOption", "JDKVersion", "inputs"},
-	}
-	pageVars := PageVars{
-		BuildFields: Inputs,
+		Status:         "notchanged",
+		ServiceName:    "ServiceName",
+		BuildType:      "BuildType",
+		BuildTypeValue: "select",
+		Email:          "Email",
 	}
 	render(w, "creator.html", pageVars)
 }
@@ -43,34 +29,58 @@ func userSelected(w http.ResponseWriter, r *http.Request) {
 // On submit
 func execute(w http.ResponseWriter, r *http.Request) {
 
-	setupTargetFiles()
 	r.ParseForm()
 
-	fmt.Println("Service Name is:", r.FormValue("serviceName"))
-	fmt.Println("Build Type is:", r.FormValue("buildType"))
-	fmt.Println("Email is:", r.FormValue("email"))
+	ServiceName := r.FormValue("ServiceName")
+	BuildType := r.FormValue("BuildType")
+	Email := r.FormValue("Email")
+	Status := r.FormValue("status")
 
-	serviceName := r.FormValue("serviceName")
-	updateFile("pipelineTemplates/buildDefinitionTemplateRequest.json", "target/buildDefinitionRequest.json", "SERVICENAME", serviceName)
-	updateFile("pipelineTemplates/sonar.properties", "target/sonar-project.properties", "SERVICENAME", serviceName)
+	if Status == "changed" {
+		Inputs := []Input{
+			Input{"Gradle Tasks", "test bootJar", "inputs"},
+			Input{"Gradle Options", "-Xmx1024m", "inputs"},
+			Input{"Java Home Option", "JDKVersion", "inputs"},
+		}
 
-	buildType := r.FormValue("buildType")
-	switch buildType {
-	case "javaGradle":
-		fmt.Println("javaGradle")
-		updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", buildType)
-	case "javaMvn":
-		fmt.Println("javaMvn")
-		updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", buildType)
-	case "vueNpm":
-		fmt.Println("vueNpm")
-	case "angularNpm":
-		fmt.Println("angularNpm")
-	case "golang":
-		fmt.Println("golang")
+		Status := "notchanged"
+		pageVars := PageVars{
+			Status:         Status,
+			ServiceName:    "ServiceName",
+			ServiceValue:   ServiceName,
+			BuildType:      "BuildType",
+			BuildTypeValue: BuildType,
+			Email:          "Email",
+			EmailValue:     Email,
+			BuildFields:    Inputs,
+		}
+		render(w, "creator.html", pageVars)
+	} else {
+		setupTargetFiles()
+
+		fmt.Println("Service Name is:", r.FormValue("ServiceName"))
+		fmt.Println("Build Type is:", r.FormValue("BuildType"))
+		//fmt.Println("Email is:", r.FormValue("Email"))
+
+		updateFile("pipelineTemplates/buildDefinitionTemplateRequest.json", "target/buildDefinitionRequest.json", "SERVICENAME", ServiceName)
+		updateFile("pipelineTemplates/sonar.properties", "target/sonar-project.properties", "SERVICENAME", ServiceName)
+
+		//	buildType := r.FormValue("buildType")
+		switch BuildType {
+		case "javaGradle":
+			fmt.Println("javaGradle")
+			updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", BuildType)
+		case "javaMvn":
+			fmt.Println("javaMvn")
+			updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", BuildType)
+		case "vueNpm":
+			fmt.Println("vueNpm")
+		case "angularNpm":
+			fmt.Println("angularNpm")
+		case "golang":
+			fmt.Println("golang")
+		}
 	}
-
-	//http.Redirect(w, r, "/creator", http.StatusFound)
 }
 
 // Create Dir or Cleanup Dir

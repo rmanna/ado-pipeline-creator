@@ -9,11 +9,15 @@ import (
 )
 
 type PageVars struct {
-	Title       string
-	ServiceName string
-	BuildType   string
-	Email       string
-	BuildFields []Input
+	Status         string
+	Title          string
+	ServiceName    string
+	ServiceValue   string
+	BuildType      string
+	BuildTypeValue string
+	Email          string
+	EmailValue     string
+	BuildFields    []Input
 }
 
 func main() {
@@ -21,7 +25,6 @@ func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/creator", creator)
 	http.HandleFunc("/execute", execute)
-	http.HandleFunc("/selected", userSelected)
 	http.ListenAndServe(getPort(), nil)
 }
 

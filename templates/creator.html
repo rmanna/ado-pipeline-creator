@@ -2,19 +2,19 @@
 <html>
 <head>
 <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
-<link href='https://fonts.googleapis.com/css?family=Rosario:400' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="../css/main.css">
+<link href='https://fonts.googleapis.com/css?family=Rosario:800' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="../css/landscape.css">
 <title>{{.Title}}</title>
 </head>
 
 <script type='text/javascript'>
  $(document).ready(function() {
-   $('select[name=compiler]').change(function(){
-     $('form').submit();
+   $('select[name=BuildType]').change(function(){
+       document.getElementsByName("status")[0].value = "changed";
+       $('form').submit();
    });
 });
 </script>
-
 
 <body>
 <nav>
@@ -26,23 +26,21 @@
 
 <div class="mainbody">
 <h1>Create your Pipeline!</h1>
-<div class="indent"><p>Enter all appropriate information</p></div>
+<p>Enter all appropriate information</p>
 </div>
 
-<div class="formselect">
+<div class="form">
 <form method="post" action="/execute">
-<table>
+<table align-center>
   <tr>
-    <td>Repository Name (Example: ol-service): </td>
-    <td>
-      <input type="text" name={{.ServiceName}} value="ol-" id="inputs">
-    </td>
+    <td>Repository Name: </td>
+    <td><input type="text" name={{.ServiceName}} value={{.ServiceValue}}></td>
   </tr>
   <tr>
       <td class="select">Application Type: </td>         
       <td>
-         <select id="inputs" name="compiler">        
-              <option value="default">select</option>
+         <select name="BuildType">        
+              <option value={{.BuildTypeValue}}>{{.BuildTypeValue}}</option>
               <option value="javaMvn">java-maven</option>
               <option value="javaGradle">java-gradle</option>
               <option value="vueNpm">vue-npm</option>
@@ -51,22 +49,22 @@
          </select>
       </td>        
   </tr>
-  {{with $1:=.BuildFields}}
-     {{range $1}}
+  {{with $4:=.BuildFields}}
+     {{range $4}}
   <tr>
     <td>{{.Name}}: </td>
-    <td><input type="text" name={{.Name}} value={{.Value}} id="inputs"></td>
+    <td><input type="text" name={{.Name}} value={{.Value}}></td>
   </tr>
      {{end}}
   {{end}}
 
   <tr>
     <td>E-mail address: </td>
-    <td><input type="text" name={{.Email}} id="inputs"></td>
+    <td><input type="text" name={{.Email}} value={{.EmailValue}}></td>
   </tr>
   <tr>
-    <td></td>
-    <td><input type="submit" value="Create" id="inputs"></td>
+    <td><input type="hidden" name="status" value={{.Status}}/></td>
+    <td><input type="submit" value="Create"></td>
   </tr>
 </table>
 </form>
