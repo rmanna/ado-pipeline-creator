@@ -1,4 +1,4 @@
-# Java pipeline using maven
+# Java pipeline using gradle
 
 ---
 trigger:
@@ -24,9 +24,10 @@ resources:
 
 variables:
   agentType: "java-agent"
-  buildType: "maven"
-  mvnOptions: "-Xmx3072m"
-  mvnGoals: "clean package"
+  buildType: "gradle"
+  tasks: 'test bootJar'
+  gradleOptions: '-Xmx1024m'
+  javaHomeOption: 'JDKVersion'
 
 jobs:
 - job:
@@ -45,8 +46,8 @@ jobs:
   - checkout: templates
   - template: "pipelineTypes/${{ variables.buildType }}.yaml@templates"
     parameters:
-      releaseVersion: ${{ variables.releaseVersion }}
-      mvnOptions: "${{ variables.mvnOptions }}" 
-      mvnGoals: "${{ variables.mvnGoals }}" 
+      tasks: '$(tasks)'
+      gradleOptions: '$(gradleOptions)'
+      javaHomeOption: '$(javaHomeOption)'
       artifactoryBaseUrl: "${{ variables.artifactoryBaseUrl }}" 
       artifactoryImagePath: "${{ variables.artifactoryImagePath }}" 

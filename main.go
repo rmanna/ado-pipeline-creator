@@ -9,7 +9,8 @@ import (
 )
 
 type PageVars struct {
-	Status         string
+	SelectStatus   string
+	AgentType      string
 	Title          string
 	ServiceName    string
 	ServiceValue   string
@@ -25,6 +26,7 @@ func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/creator", creator)
 	http.HandleFunc("/execute", execute)
+	http.HandleFunc("/results", results)
 	http.ListenAndServe(getPort(), nil)
 }
 

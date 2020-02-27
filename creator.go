@@ -1,11 +1,18 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/google/go-github/v29/github"
+	"golang.org/x/oauth2"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 type Input struct {
@@ -17,7 +24,7 @@ type Input struct {
 func creator(w http.ResponseWriter, r *http.Request) {
 
 	pageVars := PageVars{
-		Status:         "notchanged",
+		SelectStatus:   "false",
 		ServiceName:    "ServiceName",
 		BuildType:      "BuildType",
 		BuildTypeValue: "select",
@@ -31,30 +38,54 @@ func execute(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	ServiceName := r.FormValue("ServiceName")
-	BuildType := r.FormValue("BuildType")
-	Email := r.FormValue("Email")
-	Status := r.FormValue("status")
+	var ServiceName = r.FormValue("ServiceName")
+	var BuildType = r.FormValue("BuildType")
+	var Email = r.FormValue("Email")
+	var SelectStatus = r.FormValue("status")
+	var BuildFields []Input
 
-	if Status == "changed" {
-		Inputs := []Input{
-			Input{"Gradle Tasks", "test bootJar", "inputs"},
-			Input{"Gradle Options", "-Xmx1024m", "inputs"},
-			Input{"Java Home Option", "JDKVersion", "inputs"},
+	if SelectStatus == "true" {
+
+		switch BuildType {
+		case "gradle":
+			BuildFields = []Input{
+				Input{"Gradle Tasks", "test bootJar", "inputs"},
+				Input{"Gradle Options", "-Xmx1024m", "inputs"},
+				Input{"Java Home Option", "JDKVersion", "inputs"},
+			}
+		case "maven":
+			BuildFields = []Input{
+				Input{"Maven Options", "-Xmx3072m", "inputs"},
+				Input{"Maven Goals", "clean package", "inputs"},
+			}
+		case "vue":
+			BuildFields = []Input{
+				Input{"Vue Command", "", "inputs"},
+			}
+		case "angular":
+			BuildFields = []Input{
+				Input{"Npm Command", "run build", "inputs"},
+			}
+		case "golang":
+			BuildFields = []Input{
+				Input{"GO Command", "", "inputs"},
+			}
 		}
 
-		Status := "notchanged"
+		SelectStatus := "false"
+
 		pageVars := PageVars{
-			Status:         Status,
+			SelectStatus:   SelectStatus,
 			ServiceName:    "ServiceName",
 			ServiceValue:   ServiceName,
 			BuildType:      "BuildType",
 			BuildTypeValue: BuildType,
 			Email:          "Email",
 			EmailValue:     Email,
-			BuildFields:    Inputs,
+			BuildFields:    BuildFields,
 		}
 		render(w, "creator.html", pageVars)
+
 	} else {
 		setupTargetFiles()
 
@@ -67,20 +98,68 @@ func execute(w http.ResponseWriter, r *http.Request) {
 
 		//	buildType := r.FormValue("buildType")
 		switch BuildType {
-		case "javaGradle":
-			fmt.Println("javaGradle")
+		case "gradle":
+			fmt.Println("gradle")
 			updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", BuildType)
-		case "javaMvn":
-			fmt.Println("javaMvn")
+		case "maven":
+			fmt.Println("maven")
 			updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "target/azure-pipeline.yaml", "BUILDTYPE", BuildType)
-		case "vueNpm":
-			fmt.Println("vueNpm")
-		case "angularNpm":
-			fmt.Println("angularNpm")
+		case "vue":
+			fmt.Println("vue")
+		case "angular":
+			fmt.Println("angular")
 		case "golang":
 			fmt.Println("golang")
 		}
+
+		createGithubRepo(ServiceName, "new repository")
+		// git clone ServiceName
+		// cp target/* (git clone ServiceName)
+		// cd (git clone ServiceName)
+		// git add *
+		// git commit -m"Initial Repository
+
+		http.Redirect(w, r, "/results", http.StatusFound)
 	}
+}
+
+func cloneGithubRepo() {
+	_, err := git.PlainClone("/tmp/foo", false, &git.CloneOptions{
+		URL:      "https://github.com/src-d/go-git",
+		Progress: os.Stdout,
+	})
+
+	if err != nil {
+		log.Fatal("Error returned from cloning repository:", err)
+	}
+}
+
+func createGithubRepo(ServiceName string, Description string) {
+	var (
+		name        = flag.String("name", ServiceName, "Name of repo to create in authenticated user's GitHub account.")
+		description = flag.String("description", Description, "Description of created repo.")
+		private     = flag.Bool("private", true, "Will created repo be private.")
+	)
+
+	flag.Parse()
+	token := os.Getenv("GITHUB_AUTH_TOKEN")
+	if token == "" {
+		log.Fatal("Unauthorized: No token present")
+	}
+	if *name == "" {
+		log.Fatal("No name: New repos must be given a name")
+	}
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	r := &github.Repository{Name: name, Private: private, Description: description}
+	repo, _, err := client.Repositories.Create(ctx, "", r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Successfully created new repo: %v\n", repo.GetName())
 }
 
 // Create Dir or Cleanup Dir

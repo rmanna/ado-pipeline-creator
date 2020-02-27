@@ -10,12 +10,13 @@
 <script type='text/javascript'>
  $(document).ready(function() {
    $('select[name=BuildType]').change(function(){
-       document.getElementsByName("status")[0].value = "changed";
+       document.getElementsByName("status")[0].value = "true";
        $('form').submit();
    });
 });
 </script>
 
+</head>
 <body>
 <nav>
 <ul>
@@ -41,10 +42,10 @@
       <td>
          <select name="BuildType">        
               <option value={{.BuildTypeValue}}>{{.BuildTypeValue}}</option>
-              <option value="javaMvn">java-maven</option>
-              <option value="javaGradle">java-gradle</option>
-              <option value="vueNpm">vue-npm</option>
-              <option value="angularNpm">angular-npm</option>
+              <option value="maven">maven</option>
+              <option value="gradle">gradle</option>
+              <option value="vue">vue</option>
+              <option value="angular">angular</option>
               <option value="golang">go</option>
          </select>
       </td>        
@@ -63,12 +64,11 @@
     <td><input type="text" name={{.Email}} value={{.EmailValue}}></td>
   </tr>
   <tr>
-    <td><input type="hidden" name="status" value={{.Status}}/></td>
+    <td><input type="hidden" name="status" value={{.SelectStatus}}/></td>
     <td><input type="submit" value="Create"></td>
   </tr>
 </table>
 </form>
 </div>
-
 </body>
 </html>
