@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// PageVars Struct
 type PageVars struct {
 	SelectStatus   string
 	AgentType      string

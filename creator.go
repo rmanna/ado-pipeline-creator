@@ -13,12 +13,14 @@ import (
 	"github.com/google/go-github/v29/github"
 	"golang.org/x/oauth2"
 	"gopkg.in/src-d/go-git.v4"
+	githttp "gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
+// Input struct
 type Input struct {
 	Name  string
 	Value string
-	Id    string
+	ID    string
 }
 
 func creator(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +115,7 @@ func execute(w http.ResponseWriter, r *http.Request) {
 		}
 
 		createGithubRepo(ServiceName, "new repository")
-		// git clone ServiceName
+		cloneGithubRepo(ServiceName, "rmanna")
 		// cp target/* (git clone ServiceName)
 		// cd (git clone ServiceName)
 		// git add *
@@ -123,15 +125,37 @@ func execute(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func cloneGithubRepo() {
-	_, err := git.PlainClone("/tmp/foo", false, &git.CloneOptions{
-		URL:      "https://github.com/src-d/go-git",
+func cloneGithubRepo(ServiceName string, OrgName string) {
+	directory := "/tmp"
+	url := "https://github.com/rmanna/" + ServiceName
+	//token := os.Getenv("GITHUB_AUTH_TOKEN")
+	token := "348a55efe1bd06a335b94f8c5788eabc81f4b558"
+
+	r, err := git.PlainClone(directory, true, &git.CloneOptions{
+		Auth: &githttp.BasicAuth{
+			Username: "abc123", // yes, this can be anything except an empty string
+			Password: token,
+		},
+		URL:      url,
 		Progress: os.Stdout,
 	})
-
 	if err != nil {
 		log.Fatal("Error returned from cloning repository:", err)
 	}
+
+	// ... retrieving the branch being pointed by HEAD
+	ref, err := r.Head()
+	if err != nil {
+		log.Fatal("Error returned from cloning repository:", err)
+	}
+
+	// ... retrieving the commit object
+	commit, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		log.Fatal("Error returned from cloning repository:", err)
+	}
+
+	fmt.Println(commit)
 }
 
 func createGithubRepo(ServiceName string, Description string) {
@@ -141,8 +165,10 @@ func createGithubRepo(ServiceName string, Description string) {
 		private     = flag.Bool("private", true, "Will created repo be private.")
 	)
 
+	org := "rmanna"
 	flag.Parse()
-	token := os.Getenv("GITHUB_AUTH_TOKEN")
+	//token := os.Getenv("GITHUB_AUTH_TOKEN")
+	token := "348a55efe1bd06a335b94f8c5788eabc81f4b558"
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -160,6 +186,20 @@ func createGithubRepo(ServiceName string, Description string) {
 		log.Fatal(err)
 	}
 	fmt.Printf("Successfully created new repo: %v\n", repo.GetName())
+
+	// Commit README.md as part of repository setup
+	fileContent := []byte("This is a starter for the README")
+	opts := &github.RepositoryContentFileOptions{
+		Message:   github.String("Initial commit"),
+		Content:   fileContent,
+		Branch:    github.String("master"),
+		Committer: &github.CommitAuthor{Name: github.String("Self-Serve Automation"), Email: github.String("oldevops@openlane.com")},
+	}
+	_, _, err = client.Repositories.CreateFile(ctx, org, *name, "README.md", opts)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 // Create Dir or Cleanup Dir
