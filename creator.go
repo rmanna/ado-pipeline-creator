@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,20 +18,16 @@ import (
 
 var (
 	sourceOwner   = flag.String("source-owner", "rmanna", "Name of the owner (user or org) of the repo to create the commit in.")
-	sourceRepo    = flag.String("source-repo", "ol-ralph", "Name of repo to create the commit in.")
 	baseBranch    = flag.String("base-branch", "master", "Name of branch to create the `commit-branch` from.")
-	sourceFiles   = flag.String("files", "azure-pipeline.yaml,sonar-project.properties", "Comma-separated list of files to commit and their location.")
-	authorName    = flag.String("author-name", "Self Service Automation", "Name of the author of the commit.")
+	sourceFiles   = flag.String("files", "README.md,azure-pipeline.yaml,sonar-project.properties", "Comma-separated list of files to commit and their location.")
+	authorName    = flag.String("author-name", "Self-Service Automation", "Name of the author of the commit.")
 	authorEmail   = flag.String("author-email", "oldevops@openlane.com", "Email of the author of the commit.")
-	commitMessage = flag.String("commit-message", "first", "Content of the commit message.")
-	//	name        = flag.String("name", ServiceName, "Name of repo to create in authenticated user's GitHub account.")
-	//	description = flag.String("description", Description, "Description of created repo.")
-//		private     = flag.Bool("private", true, "Will created repo be private.")
+	commitMessage = flag.String("commit-message", "Initial Project Commit", "Content of the commit message.")
+	repoPrivacy   = flag.Bool("private", true, "Whether the repo will be private or not.")
+	autoInit      = flag.Bool("initialize", true, "Whether to auto initialize the repo or not.")
 )
 
-//var sourceOwner string
-//var sourceRepo string
-//var sourceFiles string
+var sourceRepo string
 var client *github.Client
 var ctx = context.Background()
 
@@ -131,6 +126,7 @@ func execute(w http.ResponseWriter, r *http.Request) {
 
 		updateFile("pipelineTemplates/sonar.properties", "sonar-project.properties", "SERVICENAME", ServiceName)
 		updateFile("pipelineTemplates/buildDefinitionTemplateRequest.json", "buildDefinitionRequest.json", "SERVICENAME", ServiceName)
+		flag.StringVar(&sourceRepo, "source-repo", ServiceName, "Name of the repository.")
 
 		createGithubRepo()
 		// SEND REQUEST TO ADO USING buildDefinitionRequest.json
@@ -142,22 +138,15 @@ func execute(w http.ResponseWriter, r *http.Request) {
 
 func createGithubRepo() {
 
-	var name string = "ol-ralph"
-	var repoName *string = &name
-	var private bool = true
-	var privateName *bool = &private
-	var description string = "new repo"
-	var descriptionName *string = &description
-
 	flag.Parse()
 
-	//token := os.Getenv("GITHUB_AUTH_TOKEN")
-	token := "1cdbdb05c55a798e9c93949aa4da83a315bfbf16"
+	token := os.Getenv("GITHUB_AUTH_TOKEN")
+	//token := "b4efb01ef973314a0ed8c8ff1453e3186210bf8c"
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	if *sourceOwner == "" || *sourceRepo == "" || *sourceFiles == "" || *authorName == "" || *authorEmail == "" {
+	if *sourceOwner == "" || sourceRepo == "" || *sourceFiles == "" || *authorName == "" || *authorEmail == "" {
 		log.Fatal("You need to specify a non-empty value for the flags `-source-owner`, `-source-repo`, `-commit-branch`, `-files`, `-author-name` and `-author-email`")
 	}
 
@@ -165,27 +154,13 @@ func createGithubRepo() {
 	tc := oauth2.NewClient(ctx, ts)
 	client = github.NewClient(tc)
 
-	r := &github.Repository{Name: repoName, Private: privateName, Description: descriptionName}
+	r := &github.Repository{Name: &sourceRepo, Private: repoPrivacy, AutoInit: autoInit}
 
 	repo, _, err := client.Repositories.Create(ctx, "", r)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("Successfully created new repo: %v\n", repo.GetName())
-
-	// First Commit - README.md as part of repository setup
-	fileContent := []byte("This is a starter for the README")
-	opts := &github.RepositoryContentFileOptions{
-		Message:   github.String("Initial commit"),
-		Content:   fileContent,
-		Branch:    github.String("master"),
-		Committer: &github.CommitAuthor{Name: github.String("Self-Serve Automation"), Email: github.String("oldevops@openlane.com")},
-	}
-	_, _, err = client.Repositories.CreateFile(ctx, "rmanna", *repoName, "README.md", opts)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 	ref, err := getRef()
 	if err != nil {
@@ -208,10 +183,9 @@ func createGithubRepo() {
 	fmt.Printf("Successfully committed pipeline files\n")
 }
 
-// getRef returns the commit branch reference object if it exists or creates it
-// from the base branch before returning it.
+// getRef returns the base branch reference object
 func getRef() (ref *github.Reference, err error) {
-	if ref, _, err = client.Git.GetRef(ctx, *sourceOwner, *sourceRepo, "refs/heads/"+*baseBranch); err == nil {
+	if ref, _, err = client.Git.GetRef(ctx, *sourceOwner, sourceRepo, "refs/heads/"+*baseBranch); err == nil {
 		return ref, nil
 	}
 
@@ -232,7 +206,7 @@ func getTree(ref *github.Reference) (tree *github.Tree, err error) {
 		entries = append(entries, &github.TreeEntry{Path: github.String(file), Type: github.String("blob"), Content: github.String(string(content)), Mode: github.String("100644")})
 	}
 
-	tree, _, err = client.Git.CreateTree(ctx, *sourceOwner, *sourceRepo, *ref.Object.SHA, entries)
+	tree, _, err = client.Git.CreateTree(ctx, *sourceOwner, sourceRepo, *ref.Object.SHA, entries)
 	return tree, err
 }
 
@@ -259,7 +233,7 @@ func getFileContent(fileArg string) (targetName string, b []byte, err error) {
 // createCommit creates the commit in the given reference using the given tree.
 func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	// Get the parent commit to attach the commit to.
-	parent, _, err := client.Repositories.GetCommit(ctx, *sourceOwner, *sourceRepo, *ref.Object.SHA)
+	parent, _, err := client.Repositories.GetCommit(ctx, *sourceOwner, sourceRepo, *ref.Object.SHA)
 	if err != nil {
 		return err
 	}
@@ -270,14 +244,14 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	date := time.Now()
 	author := &github.CommitAuthor{Date: &date, Name: authorName, Email: authorEmail}
 	commit := &github.Commit{Author: author, Message: commitMessage, Tree: tree, Parents: []*github.Commit{parent.Commit}}
-	newCommit, _, err := client.Git.CreateCommit(ctx, *sourceOwner, *sourceRepo, commit)
+	newCommit, _, err := client.Git.CreateCommit(ctx, *sourceOwner, sourceRepo, commit)
 	if err != nil {
 		return err
 	}
 
 	// Attach the commit to the master branch.
 	ref.Object.SHA = newCommit.SHA
-	_, _, err = client.Git.UpdateRef(ctx, *sourceOwner, *sourceRepo, ref, false)
+	_, _, err = client.Git.UpdateRef(ctx, *sourceOwner, sourceRepo, ref, false)
 	return err
 }
 
@@ -295,25 +269,4 @@ func updateFile(sourceFileName string, targetFileName string, sourceString strin
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func copyFileToDir(sourceFileName string, targetFileName string) {
-	sourceFile, err := os.Open(sourceFileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer sourceFile.Close()
-
-	// Create new file
-	newFile, err := os.Create(targetFileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer newFile.Close()
-
-	bytesCopied, err := io.Copy(newFile, sourceFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Copied %d bytes.", bytesCopied)
 }
