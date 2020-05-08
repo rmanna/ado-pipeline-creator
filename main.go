@@ -43,7 +43,7 @@ func getPort() string {
 func render(w http.ResponseWriter, tmpl string, pageVars PageVars) {
 
 	// prefix the name passed in with templates/
-	tmpl = fmt.Sprintf("templates/%s", tmpl)
+	tmpl = fmt.Sprintf("web/%s", tmpl)
 	//parse the template file held in the templates folder
 	t, err := template.ParseFiles(tmpl)
 

@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v31/github"
+	"github.com/rmanna/ado-pipeline-creator/internal/fileutils"
 	"golang.org/x/oauth2"
 )
 
@@ -112,10 +112,10 @@ func execute(w http.ResponseWriter, r *http.Request) {
 		switch BuildType {
 		case "gradle":
 			fmt.Println("gradle")
-			updateFile("pipelineTemplates/azure-gradle-pipeline.yaml", "azure-pipeline.yaml", "BUILDTYPE", BuildType)
+			fileutils.SearchReplace("configs/azure-gradle-pipeline.yaml", "azure-pipeline.yaml", "BUILDTYPE", BuildType)
 		case "maven":
 			fmt.Println("maven")
-			updateFile("pipelineTemplates/azure-maven-pipeline.yaml", "azure-pipeline.yaml", "BUILDTYPE", BuildType)
+			fileutils.SearchReplace("configs/azure-maven-pipeline.yaml", "azure-pipeline.yaml", "BUILDTYPE", BuildType)
 		case "vue":
 			fmt.Println("vue")
 		case "angular":
@@ -124,8 +124,8 @@ func execute(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("golang")
 		}
 
-		updateFile("pipelineTemplates/sonar.properties", "sonar-project.properties", "SERVICENAME", ServiceName)
-		updateFile("pipelineTemplates/buildDefinitionTemplateRequest.json", "buildDefinitionRequest.json", "SERVICENAME", ServiceName)
+		fileutils.SearchReplace("configs/sonar.properties", "sonar-project.properties", "SERVICENAME", ServiceName)
+		fileutils.SearchReplace("configs/buildDefinitionTemplateRequest.json", "buildDefinitionRequest.json", "SERVICENAME", ServiceName)
 		flag.StringVar(&sourceRepo, "source-repo", ServiceName, "Name of the repository.")
 
 		createGithubRepo()
@@ -140,8 +140,8 @@ func createGithubRepo() {
 
 	flag.Parse()
 
-	token := os.Getenv("GITHUB_AUTH_TOKEN")
-	//token := "b4efb01ef973314a0ed8c8ff1453e3186210bf8c"
+	//token := os.Getenv("GITHUB_AUTH_TOKEN")
+	token := "13b0268b109828397bf051216cd3a430d912be7a"
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -253,20 +253,4 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	ref.Object.SHA = newCommit.SHA
 	_, _, err = client.Git.UpdateRef(ctx, *sourceOwner, sourceRepo, ref, false)
 	return err
-}
-
-// Find and Replace
-func updateFile(sourceFileName string, targetFileName string, sourceString string, targetString string) {
-	input, err := ioutil.ReadFile(sourceFileName)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	output := strings.Replace(string(input), sourceString, targetString, -1)
-
-	if err = ioutil.WriteFile(targetFileName, []byte(output), 0666); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }
