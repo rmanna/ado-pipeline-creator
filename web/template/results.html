@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Rosario:800' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="../web/css/landscape.css">
+<title>{{.Title}}</title>
+<script type="text/javascript">
+    var source = new EventSource("http://localhost:3000/");
+    source.onmessage = function(event) {
+        var content = document.getElementById('content');
+        content.innerHTML = content.innerHTML + event.data + '<br/>';
+    };
+</script>
+</head>
+<body>
+    <div id="content"></div>
+</body>
+</html>
