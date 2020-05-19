@@ -24,18 +24,83 @@ var (
 	authorName    = flag.String("author-name", "Self-Service Automation", "Name of the author of the commit.")
 	authorEmail   = flag.String("author-email", "oldevops@openlane.com", "Email of the author of the commit.")
 	commitMessage = flag.String("commit-message", "Initial Project Commit", "Content of the commit message.")
-	repoPrivacy   = flag.Bool("private", true, "Whether the repo will be private or not.")
-	autoInit      = flag.Bool("initialize", true, "Whether to auto initialize the repo or not.")
 )
 
-// CreateRepository new
-func CreateRepository(sourceRepository string) {
+// CreateRepository exported
+func CreateRepository(token string, sourceRepository string, repositoryPrivacy bool, autoInitialize bool) {
+
+	if token == "" {
+		log.Fatal("Unauthorized: No token present")
+	}
+
+	if sourceRepository == "" {
+		log.Fatal("You need to specify a non-empty value for your source repository")
+	}
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	client = github.NewClient(tc)
+
+	r := &github.Repository{Name: &sourceRepository, Private: &repositoryPrivacy, AutoInit: &autoInitialize}
+	repo, _, err := client.Repositories.Create(ctx, "", r)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Successfully created new repo: %v\n", repo.GetName())
+}
+
+// InviteTeams exported
+func InviteTeams(teams string, permission string) {
+
+	owner := "KAR-AUTO"
+	org := "KAR-AUTO"
+	repo := "ol-maven-dummy-app"
+
+	for _, team := range strings.Split(teams, ",") {
+		teamopts := &github.TeamAddTeamRepoOptions{Permission: permission}
+		_, err := client.Teams.AddTeamRepoBySlug(ctx, org, team, owner, repo, teamopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("Successfully created team invite: %v\n", team)
+
+	}
+}
+
+// AddCollaborator exported
+func AddCollaborator(token string, collaborator string, permission string) {
+	useropts := &github.RepositoryAddCollaboratorOptions{Permission: "admin"}
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	client = github.NewClient(tc)
+	cinvite, _, err := client.Repositories.AddCollaborator(ctx, "rmanna", "ol-ralph", collaborator, useropts)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Successfully created collaborator: %v\n", cinvite.GetInvitee())
+}
+
+// ListOrgTeams exported
+func ListOrgTeams(org string, permission string) {
+	listopts := &github.ListOptions{Page: 1, PerPage: 100}
+	teams, _, err := client.Teams.ListTeams(ctx, org, listopts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%v", teams)
+}
+
+// CommitBranch exported
+func CommitBranch(token string, sourceRepository string) {
 
 	flag.StringVar(&sourceRepo, "source-repo", sourceRepository, "Name of the repository.")
 	flag.Parse()
 
-	//token := os.Getenv("GITHUB_AUTH_TOKEN")
-	token := "c1729ac37e2aaee39538323051c6c13cf47e2275"
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -47,14 +112,6 @@ func CreateRepository(sourceRepository string) {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
 	client = github.NewClient(tc)
-
-	r := &github.Repository{Name: &sourceRepo, Private: repoPrivacy, AutoInit: autoInit}
-
-	repo, _, err := client.Repositories.Create(ctx, "", r)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Successfully created new repo: %v\n", repo.GetName())
 
 	ref, err := getRef()
 	if err != nil {

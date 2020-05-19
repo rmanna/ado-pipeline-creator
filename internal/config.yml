@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+github:
+  owner: "rmanna"
+  organization: "rmanna"
+  pipelinefiles: "azure-pipeline.yaml,sonar-project.properties"
+  basebranch: "develop"
+  authorname: "Self-Service Automation"
+  authoremail: "oldevops@openlane.com"
+  commitmessage: "Initial Project Commit"
+  token: "13b0268b109828397bf051216cd3a430d912be7a"
+  repositoryprivacy: true
+  autoinitialize: true
+  permissions:
+    admin: "ol-devops"
+    write: "ol-offshore-devops,ol-development,ol-qa"
+
+buildtype:
+  gradle:
+    tasks: "test bootJar"
+    options: "-Xmx1024m"
+    javahomeoptions: "JDKVersion"
+  maven:
+    options: "-Xmx3072m"
+    goals: "clean package"
+  vue:
+    command: "run build"
+  angular:
+    command: "run build"
+  golang:
+    command: "build"
