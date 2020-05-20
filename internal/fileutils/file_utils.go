@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// UpdateFile Find and Replace
+// SearchReplace exported
 func SearchReplace(sourceFileName string, targetFileName string, sourceString string, targetString string) {
 	input, err := ioutil.ReadFile(sourceFileName)
 	if err != nil {

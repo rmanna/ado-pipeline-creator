@@ -9,7 +9,7 @@ type Configurations struct {
 
 // ServerConfiguration exported
 type ServerConfiguration struct {
-	Port int
+	Port string
 }
 
 // GithubConfiguration exported

@@ -22,8 +22,6 @@ func ReadYamlConfig(configPath string, configName string) (configuration config.
 	if err != nil {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
-
-	fmt.Printf("%#v\n", configuration)
-
+	//fmt.Printf("%#v\n", configuration)
 	return configuration
 }
